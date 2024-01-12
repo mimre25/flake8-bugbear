@@ -54,6 +54,7 @@ from bugbear import (
     B907,
     B908,
     B950,
+    B999,
     BugBearChecker,
     BugBearVisitor,
 )
@@ -951,6 +952,21 @@ class BugbearTestCase(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout.decode("utf8"))
         self.assertEqual(proc.stdout, b"")
         self.assertEqual(proc.stderr, b"")
+
+    def test_b999(self):
+        filename = Path(__file__).absolute().parent / "b999.py"
+        mock_options = Namespace(select=[], extend_select=["B999"])
+        bbc = BugBearChecker(filename=str(filename), options=mock_options)
+        errors = list(bbc.run())
+        print(errors)
+        expected = [
+            B999(11, 8),
+            B999(25, 8),
+            B999(26, 8),
+            B999(40, 8),
+            B999(46, 8),
+        ]
+        self.assertEqual(errors, self.errors(*expected))
 
 
 class TestFuzz(unittest.TestCase):
