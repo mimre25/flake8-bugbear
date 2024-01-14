@@ -197,6 +197,9 @@ second usage. Save the result to a list if the result is needed multiple times.
 
 **B036**: Found ``except BaseException:`` without re-raising (no ``raise`` in the top-level of the ``except`` block). This catches all kinds of things (Exception, SystemExit, KeyboardInterrupt...) and may prevent a program from exiting as expected.
 
+**B038**: Found a mutation of a mutable loop iterable inside the loop body.
+Changes to the iterable of a loop such as calls to `list.remove()` or via `del` can cause unintended bugs.
+
 Opinionated warnings
 ~~~~~~~~~~~~~~~~~~~~
 
