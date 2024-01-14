@@ -496,7 +496,7 @@ class BugBearVisitor(ast.NodeVisitor):
         self.check_for_b020(node)
         self.check_for_b023(node)
         self.check_for_b031(node)
-        self.check_for_b999(node)
+        self.check_for_b038(node)
         self.generic_visit(node)
 
     def visit_AsyncFor(self, node):
@@ -1546,17 +1546,17 @@ class BugBearVisitor(ast.NodeVisitor):
         elif node.func.attr == "split":
             check(2, "maxsplit")
 
-    def check_for_b999(self, node: ast.For):
+    def check_for_b038(self, node: ast.For):
         if isinstance(node.iter, ast.Name):
             name = _to_name_str(node.iter)
         elif isinstance(node.iter, ast.Attribute):
             name = _to_name_str(node.iter)
         else:
             return
-        checker = B999Checker(name)
+        checker = B038Checker(name)
         checker.visit(node.body)
         for mutation in checker.mutations:
-            self.errors.append(B999(mutation.lineno, mutation.col_offset))
+            self.errors.append(B038(mutation.lineno, mutation.col_offset))
 
 
 def compose_call_path(node):
@@ -1569,7 +1569,7 @@ def compose_call_path(node):
         yield node.id
 
 
-class B999Checker(ast.NodeVisitor):
+class B038Checker(ast.NodeVisitor):
     def __init__(self, name: str):
         self.name = name
         self.mutations = []
@@ -2105,5 +2105,9 @@ B908 = Error(
 
 B950 = Error(message="B950 line too long ({} > {} characters)")
 
-B999 = Error(message="B999 editing loop iterable can cause unintended bugs!")
+B038 = Error(
+    message=(
+        "B038 editing a loop's mutable iterable often leads to unexpected results/bugs"
+    )
+)
 disabled_by_default = ["B901", "B902", "B903", "B904", "B905", "B906", "B908", "B950"]
