@@ -1608,6 +1608,7 @@ class B038Checker(ast.NodeVisitor):
         "extend",
         "insert",
         "pop",
+        "popitem",
     )
 
     def __init__(self, name: str):

@@ -71,3 +71,5 @@ mydicts = {'a': {'foo': 1, 'bar': 2}}
 for mydict in mydicts:
     if mydicts.get('a', ''):
         print(mydict['foo'])  # should not error
+        mydicts.popitem() # should error
+        
