@@ -1609,6 +1609,13 @@ class B909Checker(ast.NodeVisitor):
         "insert",
         "pop",
         "popitem",
+        "setdefault",
+        "update",
+        "intersection_update",
+        "difference_update",
+        "symmetric_difference_update",
+        "add",
+        "discard",
     )
 
     def __init__(self, name: str):
