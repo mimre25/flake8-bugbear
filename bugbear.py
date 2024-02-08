@@ -1622,12 +1622,23 @@ class B909Checker(ast.NodeVisitor):
         self.name = name
         self.mutations = []
 
+    def visit_Assign(self, node: ast.Assign):
+        for target in node.targets:
+            if isinstance(target, ast.Subscript) and _to_name_str(target.value):
+                self.mutations.append(node)
+        self.generic_visit(node)
+
+    def visit_AugAssign(self, node: ast.AugAssign):
+        if _to_name_str(node.target) == self.name:
+            self.mutations.append(node)
+        self.generic_visit(node)
+
     def visit_Delete(self, node: ast.Delete):
         for target in node.targets:
             if isinstance(target, ast.Subscript):
                 name = _to_name_str(target.value)
             elif isinstance(target, (ast.Attribute, ast.Name)):
-                name = _to_name_str(target)
+                name = ""  # ignore "del foo"
             else:
                 name = ""  # fallback
                 self.generic_visit(target)

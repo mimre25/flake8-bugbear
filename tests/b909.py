@@ -3,7 +3,7 @@ Should emit:
 B999 - on lines 11, 25, 26, 40, 46
 """
 
-## lists
+# lists
 
 some_list = [1, 2, 3]
 some_other_list = [1, 2, 3]
@@ -19,11 +19,11 @@ for elem in some_list:
     some_list.insert(1, 1)
     some_list.pop(1)
     some_list.pop()
-    
+
     # conditional break should error
     if elem == 2:
         some_list.remove(elem)
-        if elem ==3:
+        if elem == 3:
             break
 
     # non-errors
@@ -39,12 +39,12 @@ for elem in some_list:
         break
 
 
-## dicts
+# dicts
 mydicts = {'a': {'foo': 1, 'bar': 2}}
 
 for elem in mydicts:
     # errors
-    mydicts.popitem()  
+    mydicts.popitem()
     mydicts.setdefault('foo', 1)
     mydicts.update({'foo': 'bar'})
 
@@ -53,32 +53,53 @@ for elem in mydicts:
     elem.setdefault('foo', 1)
     elem.update({'foo': 'bar'})
 
-## sets
+# sets
 
-myset = { 1, 2, 3 }
+myset = {1, 2, 3}
 
 for elem in myset:
     # errors
-    myset.update({4,5})
-    myset.intersection_update({4,5})
-    myset.difference_update({4,5})
-    myset.symmetric_difference_update({4,5})
+    myset.update({4, 5})
+    myset.intersection_update({4, 5})
+    myset.difference_update({4, 5})
+    myset.symmetric_difference_update({4, 5})
     myset.add(4)
     myset.discard(3)
-
 
     # no errors
     del myset
 
 
-## members
+# members
 class A:
     some_list: list
+
     def __init__(self, ls):
         self.some_list = list(ls)
+
 
 a = A((1, 2, 3))
 # ensure member accesses are handled
 for elem in a.some_list:
-    a.some_list.remove(elem)  
-    del a.some_list[2]  
+    a.some_list.remove(elem)
+    del a.some_list[2]
+
+
+# Augassign
+
+foo = [1, 2, 3]
+bar = [4, 5, 6]
+for _ in foo:
+    foo *= 2
+    foo += bar
+    foo[1] = 9 #todo
+    foo[1:2] = bar
+    foo[1:2:3] = bar
+
+foo = {1,2,3}
+bar = {4,5,6}
+for _ in foo:
+    foo |= bar
+    foo &= bar
+    foo -= bar
+    foo ^= bar
