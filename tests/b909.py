@@ -57,7 +57,7 @@ for elem in mydicts:
 
 myset = {1, 2, 3}
 
-for elem in myset:
+for _ in myset:
     # errors
     myset.update({4, 5})
     myset.intersection_update({4, 5})
@@ -103,3 +103,27 @@ for _ in foo:
     foo &= bar
     foo -= bar
     foo ^= bar
+
+
+# more tests for unconditional breaks
+for _ in foo:
+    foo.remove(1)
+    for _ in bar:
+        bar.remove(1)
+        break
+    break
+
+# should not error
+for _ in foo:
+    foo.remove(1)
+    for _ in bar:
+        ...
+    break
+
+# should error (?)
+for _ in foo:
+    foo.remove(1)
+    if bar:
+        bar.remove(1)
+        break
+    break

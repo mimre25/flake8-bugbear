@@ -974,7 +974,6 @@ class BugbearTestCase(unittest.TestCase):
         mock_options = Namespace(select=[], extend_select=["B909"])
         bbc = BugBearChecker(filename=str(filename), options=mock_options)
         errors = list(bbc.run())
-        print(errors)
         expected = [
             B909(12, 4),
             B909(13, 4),
@@ -1007,6 +1006,7 @@ class BugbearTestCase(unittest.TestCase):
             B909(103, 4),
             B909(104, 4),
             B909(105, 4),
+            B909(125, 4),
         ]
         self.assertEqual(errors, self.errors(*expected))
 

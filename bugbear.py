@@ -8,7 +8,7 @@ import math
 import re
 import sys
 import warnings
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from contextlib import suppress
 from functools import lru_cache, partial
 from keyword import iskeyword
@@ -1583,7 +1583,9 @@ class BugBearVisitor(ast.NodeVisitor):
             return
         checker = B909Checker(name)
         checker.visit(node.body)
-        for mutation in checker.mutations:
+        for mutation in itertools.chain.from_iterable(
+            m for m in checker.mutations.values()
+        ):
             self.errors.append(B909(mutation.lineno, mutation.col_offset))
 
 
@@ -1620,17 +1622,18 @@ class B909Checker(ast.NodeVisitor):
 
     def __init__(self, name: str):
         self.name = name
-        self.mutations = []
+        self.mutations = defaultdict(list)
+        self._conditional_block = 0
 
     def visit_Assign(self, node: ast.Assign):
         for target in node.targets:
             if isinstance(target, ast.Subscript) and _to_name_str(target.value):
-                self.mutations.append(node)
+                self.mutations[self._conditional_block].append(node)
         self.generic_visit(node)
 
     def visit_AugAssign(self, node: ast.AugAssign):
         if _to_name_str(node.target) == self.name:
-            self.mutations.append(node)
+            self.mutations[self._conditional_block].append(node)
         self.generic_visit(node)
 
     def visit_Delete(self, node: ast.Delete):
@@ -1644,7 +1647,7 @@ class B909Checker(ast.NodeVisitor):
                 self.generic_visit(target)
 
             if name == self.name:
-                self.mutations.append(node)
+                self.mutations[self._conditional_block].append(node)
 
     def visit_Call(self, node: ast.Call):
         if isinstance(node.func, ast.Attribute):
@@ -1656,9 +1659,14 @@ class B909Checker(ast.NodeVisitor):
                 function_object == self.name
                 and function_name in self.MUTATING_FUNCTIONS
             ):
-                self.mutations.append(node)
+                self.mutations[self._conditional_block].append(node)
 
         self.generic_visit(node)
+
+    def visit_If(self, node: ast.If):
+        self._conditional_block += 1
+        self.visit(node.body)
+        self._conditional_block += 1
 
     def visit(self, node):
         """Like super-visit but supports iteration over lists."""
@@ -1666,7 +1674,9 @@ class B909Checker(ast.NodeVisitor):
             return super().visit(node)
 
         for elem in node:
-            super().visit(elem)
+            if isinstance(elem, ast.Break):
+                self.mutations[self._conditional_block].clear()
+            self.visit(elem)
         return node
 
 
