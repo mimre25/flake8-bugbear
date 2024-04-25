@@ -127,3 +127,7 @@ for _ in foo:
         bar.remove(1)
         break
     break
+
+lst: list[dict] = [{}, {}, {}]
+for dic in lst:
+    dic["key"] = False

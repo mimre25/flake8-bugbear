@@ -1631,7 +1631,10 @@ class B909Checker(ast.NodeVisitor):
 
     def visit_Assign(self, node: ast.Assign):
         for target in node.targets:
-            if isinstance(target, ast.Subscript) and _to_name_str(target.value):
+            if (
+                isinstance(target, ast.Subscript)
+                and _to_name_str(target.value) == self.name
+            ):
                 self.mutations[self._conditional_block].append(node)
         self.generic_visit(node)
 
