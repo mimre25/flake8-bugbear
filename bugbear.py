@@ -1581,11 +1581,13 @@ class BugBearVisitor(ast.NodeVisitor):
     def check_for_b909(self, node: ast.For):
         if isinstance(node.iter, ast.Name):
             name = _to_name_str(node.iter)
+            key = _to_name_str(node.target)
         elif isinstance(node.iter, ast.Attribute):
             name = _to_name_str(node.iter)
+            key = _to_name_str(node.target)
         else:
             return
-        checker = B909Checker(name)
+        checker = B909Checker(name, key)
         checker.visit(node.body)
         for mutation in itertools.chain.from_iterable(
             m for m in checker.mutations.values()
@@ -1624,8 +1626,9 @@ class B909Checker(ast.NodeVisitor):
         "discard",
     )
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, key: str):
         self.name = name
+        self.key = key
         self.mutations = defaultdict(list)
         self._conditional_block = 0
 
@@ -1634,6 +1637,7 @@ class B909Checker(ast.NodeVisitor):
             if (
                 isinstance(target, ast.Subscript)
                 and _to_name_str(target.value) == self.name
+                and _to_name_str(target.slice) != self.key
             ):
                 self.mutations[self._conditional_block].append(node)
         self.generic_visit(node)
