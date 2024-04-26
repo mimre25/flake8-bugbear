@@ -1605,6 +1605,46 @@ def compose_call_path(node):
         yield node.id
 
 
+def _tansform_slice_to_py39(slice: ast.Slice) -> ast.Slice | ast.Name:
+    """Transform a py38 style slice to a py39 style slice.
+
+    In py39 the slice was changed to have simple names directly assigned:
+    ```py
+    # code:
+    some_dict[key]
+    # py38:
+    slice=Index(
+        value=Name(
+                lineno=152,
+                col_offset=14,
+                end_lineno=152,
+                end_col_offset=17,
+                id='key',
+                ctx=Load()
+            ),
+    )
+    # py39 onwards:
+    slice=Name(
+                lineno=152,
+                col_offset=14,
+                end_lineno=152,
+                end_col_offset=17,
+                id='key',
+                ctx=Load()
+            ),
+    ```
+
+    > Changed in version 3.9: Simple indices are represented by their value,
+    > extended slices are represented as tuples.
+    from https://docs.python.org/3/library/ast.html#module-ast
+    """
+    if sys.version_info >= (3, 9):
+        return slice
+    if isinstance(slice, ast.Index) and isinstance(slice.value, ast.Name):
+        slice = slice.value
+    return slice
+
+
 class B909Checker(ast.NodeVisitor):
     # https://docs.python.org/3/library/stdtypes.html#mutable-sequence-types
     MUTATING_FUNCTIONS = (
@@ -1637,7 +1677,7 @@ class B909Checker(ast.NodeVisitor):
             if (
                 isinstance(target, ast.Subscript)
                 and _to_name_str(target.value) == self.name
-                and _to_name_str(target.slice) != self.key
+                and _to_name_str(_tansform_slice_to_py39(target.slice)) != self.key
             ):
                 self.mutations[self._conditional_block].append(node)
         self.generic_visit(node)
